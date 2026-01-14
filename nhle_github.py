@@ -1,0 +1,70 @@
+import requests
+from models import SimplePlayer, TeamRoster
+
+allActiveTeams = [
+    "ANA",  # Anaheim Ducks
+    "BOS",  # Boston Bruins
+    "BUF",  # Buffalo Sabres
+    "CAR",  # Carolina Hurricanes
+    "CBJ",  # Columbus Blue Jackets
+    "CGY",  # Calgary Flames
+    "CHI",  # Chicago Blackhawks
+    "COL",  # Colorado Avalanche
+    "DAL",  # Dallas Stars
+    "DET",  # Detroit Red Wings
+    "EDM",  # Edmonton Oilers
+    "FLA",  # Florida Panthers
+    "LAK",  # Los Angeles Kings
+    "MIN",  # Minnesota Wild
+    "MTL",  # Montreal Canadiens
+    "NJD",  # New Jersey Devils
+    "NSH",  # Nashville Predators
+    "NYI",  # New York Islanders
+    "NYR",  # New York Rangers
+    "OTT",  # Ottawa Senators
+    "PHI",  # Philadelphia Flyers
+    "PIT",  # Pittsburgh Penguins
+    "SEA",  # Seattle Kraken
+    "SJS",  # San Jose Sharks
+    "STL",  # St. Louis Blues
+    "TBL",  # Tampa Bay Lightning
+    "TOR",  # Toronto Maple Leafs
+    "UTA",  # Utah Hockey Club (formerly Arizona)
+    "VAN",  # Vancouver Canucks
+    "VGK",  # Vegas Golden Knights
+    "WPG",  # Winnipeg Jets
+    "WSH",  # Washington Capitals
+]
+
+class NhleGithub:
+    def __init__(self):
+        self.season = "20252026"
+        self.base_url = "https://api-web.nhle.com/v1/roster"
+
+    # Return SimplePlayer list from TeamRoster
+    def get_simplifiedPlayers(self, team_code: str) -> list[SimplePlayer]:
+        roster = self.get_players_on_team(team_code)
+        simple_players = []
+        for player in roster.forwards + roster.defensemen + roster.goalies:
+            simple_player = SimplePlayer(
+                headshot=player.headshot,
+                firstName=player.firstName,
+                lastName=player.lastName,
+            )
+            simple_players.append(simple_player)
+        return simple_players
+
+    # https://api-web.nhle.com/v1/roster/TOR/20252026
+    def get_players_on_team(self, team_code: str) -> TeamRoster:
+        url = f"{self.base_url}/{team_code}/{self.season}"
+        response = requests.get(url)
+        response.raise_for_status()
+        
+        # Validate and parse the response
+        roster = TeamRoster(**response.json())
+        return roster
+
+# Main function, print how many teams are there
+if __name__ == "__main__":
+    print("Fetching NHL team rosters from nhle-github...")
+    print(len(allActiveTeams))
