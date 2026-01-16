@@ -71,3 +71,9 @@ processed-face-data/
 *.png
 *.jpg
 *.jpeg
+
+# Ignore everything in the london-data folder
+london-data/*
+
+beauty_score_model.pkl
+embeddings_cache.pkl

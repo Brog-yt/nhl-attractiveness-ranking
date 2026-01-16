@@ -16,3 +16,4 @@ if __name__ == "__main__":
             print(f"  First 10 values: {embedding[:10]}")
         except Exception as e:
             print(f"  Error: {e}")
+
