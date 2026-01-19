@@ -41,17 +41,33 @@ class NhleGithub:
         self.season = "20252026"
         self.base_url = "https://api-web.nhle.com/v1/roster"
 
+    def gat_all_players_on_all_teams(self) -> dict[str, TeamRoster]:
+        all_teams_rosters = {}
+        for team_code in allActiveTeams:
+            roster = self.get_players_on_team(team_code)
+            all_teams_rosters[team_code] = roster
+        return all_teams_rosters
+
     # Return SimplePlayer list from TeamRoster
     def get_simplifiedPlayers(self, team_code: str) -> list[SimplePlayer]:
         roster = self.get_players_on_team(team_code)
         simple_players = []
         for player in roster.forwards + roster.defensemen + roster.goalies:
-            simple_player = SimplePlayer(
-                headshot=player.headshot,
-                firstName=player.firstName,
-                lastName=player.lastName,
-            )
-            simple_players.append(simple_player)
+            # Skip players without valid headshots
+            if not player.headshot or not player.headshot.strip():
+                continue
+            try:
+                simple_player = SimplePlayer(
+                    id=player.id,
+                    headshot=player.headshot,
+                    firstName=player.firstName,
+                    lastName=player.lastName,
+                )
+                simple_players.append(simple_player)
+            except Exception as e:
+                # Skip players with invalid data
+                print(f"    Skipping player {player.id}: {e}")
+                continue
         return simple_players
 
     # https://api-web.nhle.com/v1/roster/TOR/20252026

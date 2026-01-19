@@ -77,3 +77,10 @@ london-data/*
 
 beauty_score_model.pkl
 embeddings_cache.pkl
+
+# Ignore any .pkl files
+*.pkl
+# Ignore any .h5 files
+*.h5
+
+

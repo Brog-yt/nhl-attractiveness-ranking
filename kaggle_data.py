@@ -6,9 +6,14 @@ import pandas as pd
 class KaggleData:
     """Handle Kaggle dataset downloads and data preparation"""
     
-    def getSCUTData(self) -> pd.DataFrame:
+    def getSCUTData(self, gender: str = None) -> pd.DataFrame:
         """
         Download and process the SCUT-FBP5500-v2 facial beauty dataset.
+        
+        Args:
+            gender: Optional filter - 'male', 'female', or None for all
+                   SCUT filenames: AM=Asian Male, CM=Caucasian Male, 
+                                   AF=Asian Female, CF=Caucasian Female
         
         Returns:
             pd.DataFrame: DataFrame with columns ['image', 'score', 'path']
@@ -29,6 +34,13 @@ class KaggleData:
         with open(labels_path) as f:
             for line in f:
                 fname, score = line.strip().split()
+                
+                # Apply gender filter if specified
+                if gender == 'male' and not (fname.startswith('AM') or fname.startswith('CM')):
+                    continue
+                elif gender == 'female' and not (fname.startswith('AF') or fname.startswith('CF')):
+                    continue
+                
                 data.append((fname, float(score)))
         
         # Create DataFrame

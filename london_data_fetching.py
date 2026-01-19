@@ -46,10 +46,13 @@ class LondonDataFetching:
     # Each photo is stored in london-data/neutral-front/{photo_name}_03.jpg
     # For example, photo X001 is stored in london-data/neutral-front/X001_03.jpg
     # Return a DataFrame with columns ['image', 'score', 'path'] matching KaggleData format
-    def get_london_data(self) -> pd.DataFrame:
+    def get_london_data(self, gender: str = None) -> pd.DataFrame:
         """
         Get London dataset as a DataFrame matching the KaggleData format.
         Returns columns: ['image', 'score', 'path'] with scores scaled from 1-7 to 1-5.
+        
+        Args:
+            gender: Optional filter - 'male', 'female', or None for all
         
         Returns:
             pd.DataFrame: DataFrame with columns ['image', 'score', 'path']
@@ -60,10 +63,29 @@ class LondonDataFetching:
         # Get photo name to score mapping
         photo_scores = self.process_csv()
         
+        # Load gender info if filtering is needed
+        gender_filter = None
+        if gender:
+            info_path = Path("london-data/london_faces_info.csv")
+            if info_path.exists():
+                info_df = pd.read_csv(info_path)
+                # Create mapping of face_id to gender (001 -> male/female)
+                gender_map = dict(zip(info_df['face_id'].astype(str).str.zfill(3), 
+                                     info_df['face_gender']))
+                gender_filter = gender_map
+        
         # Convert to DataFrame format
         data = []
         for photo_name, score in photo_scores.items():
-            photo_path = f"london-data/neutral-front/{photo_name}_03.jpg"
+            # Extract face_id from photo_name (X001 -> 001)
+            face_id = photo_name[1:]  # Remove 'X' prefix
+            
+            # Apply gender filter if specified
+            if gender_filter and face_id in gender_filter:
+                if gender_filter[face_id] != gender:
+                    continue
+            
+            photo_path = f"london-data/neutral_front/{photo_name}_03.jpg"
             data.append((photo_name, score, photo_path))
         
         df = pd.DataFrame(data, columns=["image", "score", "path"])

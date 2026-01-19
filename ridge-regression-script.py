@@ -12,22 +12,25 @@ import joblib
 import pandas as pd
 
 # Flag to regenerate embeddings cache
-REGENERATE_EMBEDDINGS = False
-CACHE_FILE = "embeddings_cache.pkl"
-MODEL_FILE = "beauty_score_model.pkl"
+REGENERATE_EMBEDDINGS = True
 
-# Load datasets
+# Gender filter - set to 'male', 'female', or None for all
+GENDER_FILTER = 'male'
+
+# Set cache and model filenames based on gender filter
+if GENDER_FILTER:
+    CACHE_FILE = f"embeddings_cache_{GENDER_FILTER}.pkl"
+    MODEL_FILE = f"beauty_score_model_{GENDER_FILTER}.pkl"
+else:
+    CACHE_FILE = "embeddings_cache.pkl"
+    MODEL_FILE = "beauty_score_model.pkl"
+
+# Load datasets with gender filter
 kaggle_data = KaggleData()
-df_scut = kaggle_data.getSCUTData()
+df_scut = kaggle_data.getSCUTData(gender=GENDER_FILTER)
 
-london_data = LondonDataFetching()
-df_london = london_data.get_london_data()
-
-# Combine datasets
-df_combined = pd.concat([df_scut, df_london], ignore_index=True)
-print(f"SCUT dataset size: {len(df_scut)}")
-print(f"London dataset size: {len(df_london)}")
-print(f"Combined dataset size: {len(df_combined)}")
+print(f"Gender filter: {GENDER_FILTER or 'None (all genders)'}")
+print(f"SCUT samples: {len(df_scut)}")
 
 # Initialize FaceProcesser
 processor = FaceProcesser()
@@ -60,13 +63,13 @@ else:
         embeddings = []
         scores = []
         
-        for i in range(len(df_combined)):
+        for i in range(len(df_scut)):
             try:
-                embedding = processor.get_embedding_from_path(df_combined.loc[i, "path"])
+                embedding = processor.get_embedding_from_path(df_scut.loc[i, "path"])
                 embeddings.append(embedding)
-                scores.append(df_combined.loc[i, "score"])
+                scores.append(df_scut.loc[i, "score"])
                 if (i + 1) % 100 == 0:
-                    print(f"  Processed {i + 1}/{len(df_combined)} images")
+                    print(f"  Processed {i + 1}/{len(df_scut)} images")
             except Exception as e:
                 print(f"Error on image {i}: {e}")
         
@@ -108,7 +111,7 @@ else:
     print(f"\nModel saved to {MODEL_FILE}")
 
 # Predict brad.png
-image_path = "tammy.png"
+image_path = "brad.png"
 print(f"\nPredicting beauty score for image: {image_path}")
 embedding = processor.get_embedding_from_path(image_path)
 predicted_score = model.predict(embedding.reshape(1, -1))[0]
