@@ -1,5 +1,5 @@
 import requests
-from models import SimplePlayer, TeamRoster
+from models import SimplePlayer, TeamRoster, SpecificPlayerInfo
 
 allActiveTeams = [
     "ANA",  # Anaheim Ducks
@@ -79,6 +79,15 @@ class NhleGithub:
         # Validate and parse the response
         roster = TeamRoster(**response.json())
         return roster
+
+    # Get specific player stats
+    # https://api-web.nhle.com/v1/player/8478402/landing
+    def get_player_stats(self, player_id: int) -> SpecificPlayerInfo:
+        url = f"https://api-web.nhle.com/v1/player/{player_id}/landing"
+        response = requests.get(url)
+        response.raise_for_status()
+        return SpecificPlayerInfo(**response.json())
+
 
 # Main function, print how many teams are there
 if __name__ == "__main__":
