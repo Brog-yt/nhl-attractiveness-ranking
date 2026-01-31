@@ -13,9 +13,11 @@ import pandas as pd
 
 # Configuration
 REGENERATE_EMBEDDINGS = False
-CACHE_FILE = "embeddings_cache.pkl"
-XGBOOST_MODEL_FILE = "xgboost_attractiveness_model.pkl"
-LIGHTGBM_MODEL_FILE = "lightgbm_attractiveness_model.pkl"
+CACHE_DIR = Path("cached-models")
+CACHE_DIR.mkdir(exist_ok=True)
+CACHE_FILE = CACHE_DIR / "embeddings_cache.pkl"
+XGBOOST_MODEL_FILE = CACHE_DIR / "xgboost_attractiveness_model.pkl"
+LIGHTGBM_MODEL_FILE = CACHE_DIR / "lightgbm_attractiveness_model.pkl"
 
 # Load datasets
 print("Loading datasets...")

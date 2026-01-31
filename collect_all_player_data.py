@@ -83,8 +83,8 @@ def get_attractive_players_with_stats() -> List[SimpleSpecificPlayerData]:
             if i % 10 == 0:
                 print(f"  Processed {i}/{len(players_with_attractive_scores)} players")
             
-            # Wait for 3 seconds between requests to avoid rate limiting
-            time.sleep(3)
+            # Wait for 1 second between requests to avoid rate limiting
+            time.sleep(1)
 
         except Exception as e:
             print(f"  Error fetching stats for player ID {player_id}: {e}")

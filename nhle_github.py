@@ -1,4 +1,6 @@
 import requests
+from pathlib import Path
+import json
 from models import SimplePlayer, TeamRoster, SpecificPlayerInfo
 
 allActiveTeams = [
@@ -87,6 +89,37 @@ class NhleGithub:
         response = requests.get(url)
         response.raise_for_status()
         return SpecificPlayerInfo(**response.json())
+    
+    def get_num_wins_for_team(self, team_code: str) -> float:
+        """
+        Get the points percentage for a specific team from league-standings.json.
+        
+        Args:
+            team_code: Three-letter team code (e.g., 'TOR')
+            
+        Returns:
+            Points percentage as a float (e.g., 0.625 for 62.5%)
+        """
+        # Load standings data from JSON file
+        standings_file = Path(__file__).parent / "nhle" / "league-standings.json"
+        
+        try:
+            with open(standings_file, 'r') as f:
+                standings_data = json.load(f)
+            
+            # Search through standings for the team
+            for standing in standings_data.get("standings", []):
+                if standing.get("teamAbbrev", {}).get("default") == team_code or \
+                   standing.get("teamAbbrev") == team_code:
+                    return standing.get("pointPctg", 0.0)
+            
+            return 0.0
+        except FileNotFoundError:
+            print(f"Warning: league-standings.json not found at {standings_file}")
+            return 0.0
+        except Exception as e:
+            print(f"Error reading league standings: {e}")
+            return 0.0
 
 
 # Main function, print how many teams are there
