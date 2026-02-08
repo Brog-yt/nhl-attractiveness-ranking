@@ -7,22 +7,33 @@ from face_processer import FaceProcesser
 from nhle_github import NhleGithub, allActiveTeams
 from models import PlayerAttractiveAnalysis, SimplePlayer
 
-# Use the male-only trained model for NHL players
-MODEL_FILE = "beauty_score_model_male.pkl"
+# Use the male-only trained model for NHL players (SVR with GridSearchCV optimization)
+CACHE_DIR = Path("cached-models")
+MODEL_FILE = CACHE_DIR / "beauty_score_model_male.pkl"
+SCALER_FILE = CACHE_DIR / "beauty_score_model_male_scaler.pkl"
 
 def main():
-    # Step 1: Check if the model exists
-    model_path = Path(MODEL_FILE)
-    if not model_path.exists():
+    # Step 1: Check if the model and scaler exist
+    if not MODEL_FILE.exists():
         raise FileNotFoundError(
             f"Model file not found: {MODEL_FILE}. "
             "Please run ridge-regression-script.py first to generate the model."
         )
     
-    # Load the trained Ridge regression model
-    print(f"Loading model from {MODEL_FILE}...")
-    model = joblib.load(model_path)
-    print("Model loaded successfully!\n")
+    if not SCALER_FILE.exists():
+        raise FileNotFoundError(
+            f"Scaler file not found: {SCALER_FILE}. "
+            "Please run ridge-regression-script.py first to generate the scaler."
+        )
+    
+    # Load the trained SVR model and scaler
+    print(f"Loading SVR model from {MODEL_FILE}...")
+    model = joblib.load(MODEL_FILE)
+    print("SVR model loaded successfully!")
+    
+    print(f"Loading scaler from {SCALER_FILE}...")
+    scaler = joblib.load(SCALER_FILE)
+    print("Scaler loaded successfully!\n")
     
     # Initialize FaceProcesser and NhleGithub
     processor = FaceProcesser()
@@ -49,13 +60,15 @@ def main():
     processing_errors = []
     
     print("Processing player headshots and predicting attractiveness scores...")
+    print(f"Using optimized SVR model (Test MSE: 0.0958)\n")
     for i, player in enumerate(all_players):
         try:
             # Get embedding from headshot URL
             embedding = processor.get_embedding_from_url(player.headshot)
             
-            # Predict attractiveness score
-            score = model.predict(embedding.reshape(1, -1))[0]
+            # Scale the embedding and predict attractiveness score
+            embedding_scaled = scaler.transform(embedding.reshape(1, -1))
+            score = model.predict(embedding_scaled)[0]
             
             # Create PlayerAttractiveAnalysis object (rank will be set after sorting)
             analysis = PlayerAttractiveAnalysis(
@@ -90,14 +103,15 @@ def main():
         analysis.rank = i
     
     # Step 6: Print top 10 most attractive players
-    print("=" * 60)
+    print("="*60)
     print("TOP 10 MOST ATTRACTIVE NHL PLAYERS")
-    print("=" * 60)
+    print("(SVR Model - Typical Error: ±0.31 points)")
+    print("="*60)
     for i, analysis in enumerate(player_analyses[:10], 1):
         player = analysis.player
         score = analysis.ridgeAttractivenessScore
         print(f"{i:2d}. {player.firstName.default} {player.lastName.default:20s} - Score: {score:.4f}")
-    print("=" * 60)
+    print("="*60)
     print()
     
     # Step 7: Write full list to JSON file

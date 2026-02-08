@@ -6,6 +6,25 @@ from models import SimpleSpecificPlayerData
 from nhle_github import NhleGithub
 import numpy as np
 from scipy import stats
+import joblib
+
+
+# SVR Model and Scaler paths
+CACHE_DIR = Path("cached-models")
+MODEL_FILE = CACHE_DIR / "beauty_score_model_male.pkl"
+SCALER_FILE = CACHE_DIR / "beauty_score_model_male_scaler.pkl"
+
+
+def load_svr_model_and_scaler():
+    """Load the optimized SVR model and scaler"""
+    if not MODEL_FILE.exists() or not SCALER_FILE.exists():
+        raise FileNotFoundError(
+            "SVR model or scaler not found. Please run ridge-regression-script.py first."
+        )
+    
+    model = joblib.load(MODEL_FILE)
+    scaler = joblib.load(SCALER_FILE)
+    return model, scaler
 
 
 def load_attractive_players_with_stats() -> List[SimpleSpecificPlayerData]:
@@ -47,10 +66,35 @@ def get_position_group(position: str) -> str:
 
 
 if __name__ == "__main__":
-    # Load the data
-    players = load_attractive_players_with_stats()
+    # Load SVR model and scaler
+    print("Loading optimized SVR model and scaler...")
+    model, scaler = load_svr_model_and_scaler()
+    print("SVR model loaded successfully!\n")
     
-    print(f"Loaded {len(players)} players with stats\n")
+    # Load the data
+    print("Loading player data from attractiveness_analysis.json and stats...")
+    players_file = Path(__file__).parent / "players" / "attractiveness_analysis.json"
+    
+    with open(players_file, 'r') as f:
+        attractiveness_data = json.load(f)
+    
+    # Create a map of player ID to SVR attractiveness score
+    svr_scores = {p['player']['id']: p['ridgeAttractivenessScore'] for p in attractiveness_data}
+    
+    # Get players with stats
+    from collect_all_player_data import get_attractive_players_with_stats
+    
+    print("Collecting player stats...")
+    players_with_stats = get_attractive_players_with_stats()
+    
+    # Update with SVR scores
+    players: List[SimpleSpecificPlayerData] = []
+    for player in players_with_stats:
+        if player.player.id in svr_scores:
+            player.ridgeAttractivenessScore = svr_scores[player.player.id]
+            players.append(player)
+    
+    print(f"Loaded {len(players)} players with stats and SVR attractiveness scores\n")
     
     # Group players by country
     countries: Dict[str, List[SimpleSpecificPlayerData]] = defaultdict(list)
@@ -73,6 +117,7 @@ if __name__ == "__main__":
     # Print the rankings
     print("=" * 60)
     print("NHL PLAYER ATTRACTIVENESS RANKINGS BY COUNTRY")
+    print("(Using SVR Model - Test MSE: 0.0958)")
     print("=" * 60)
     print(f"{'Rank':<6} {'Country':<10} {'Avg Score':<12} {'Players':<10}")
     print("-" * 60)

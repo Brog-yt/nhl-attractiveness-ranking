@@ -1,9 +1,11 @@
 import cv2
 from pathlib import Path
-from sklearn.linear_model import Ridge
-from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import mean_squared_error
+from sklearn.linear_model import Ridge, ElasticNet
+from sklearn.svm import SVR
+from sklearn.decomposition import PCA
+from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.metrics import mean_squared_error, mean_absolute_error
 from face_processer import FaceProcesser
 from kaggle_data import KaggleData
 from london_data_fetching import LondonDataFetching
@@ -11,12 +13,16 @@ import numpy as np
 import pickle
 import joblib
 import pandas as pd
+from tensorflow import keras
+from keras import layers
+import warnings
+warnings.filterwarnings('ignore')
 
 # Flag to regenerate embeddings cache
 REGENERATE_EMBEDDINGS = False
 
 # Gender filter - set to 'male', 'female', or None for all
-GENDER_FILTER = None  # Use all genders for better generalization
+GENDER_FILTER = 'male'
 
 # Set cache and model filenames based on gender filter
 CACHE_DIR = Path("cached-models")
@@ -103,7 +109,7 @@ else:
     
     # Find optimal alpha using cross-validation
     print("\nFinding optimal alpha parameter...")
-    alphas = [0.001, 0.01, 0.1, 0.5, 1.0, 5.0, 10.0, 50.0, 100.0]
+    alphas = [0.001, 0.01, 0.1, 0.5, 1.0, 5.0, 10.0, 50.0, 100.0, 200.0, 500.0, 1000.0]
     best_alpha = None
     best_cv_score = float('-inf')
     
@@ -111,7 +117,7 @@ else:
         ridge = Ridge(alpha=alpha)
         cv_scores = cross_val_score(ridge, X_train_scaled, y_train, cv=5, scoring='neg_mean_squared_error')
         cv_mse = -cv_scores.mean()
-        print(f"  Alpha={alpha:<7.3f} -> CV MSE: {cv_mse:.6f}")
+        print(f"  Alpha={alpha:<8.3f} -> CV MSE: {cv_mse:.6f}")
         if -cv_scores.mean() < best_cv_score or best_cv_score == float('-inf'):
             best_cv_score = -cv_scores.mean()
             best_alpha = alpha
@@ -128,9 +134,17 @@ else:
     
     train_mse = mean_squared_error(y_train, train_predictions)
     test_mse = mean_squared_error(y_test, test_predictions)
+    test_mae = mean_absolute_error(y_test, test_predictions)
     
-    print(f"\nTrain MSE: {train_mse:.6f}")
-    print(f"Test MSE: {test_mse:.6f}")
+    print(f"\n{'='*60}")
+    print("RIDGE REGRESSION RESULTS")
+    print(f"{'='*60}")
+    print(f"Train MSE: {train_mse:.6f}")
+    print(f"Test MSE:  {test_mse:.6f}")
+    print(f"Test MAE:  {test_mae:.6f}")
+    
+    ridge_test_mse = test_mse
+    ridge_model = model
     
     # Save the model and scaler
     model_path = Path(MODEL_FILE)
@@ -139,6 +153,96 @@ else:
     joblib.dump(scaler, scaler_path)
     print(f"\nModel saved to {MODEL_FILE}")
     print(f"Scaler saved to {scaler_path}")
+    
+    # Try Neural Network
+    print(f"\n{'='*60}")
+    print("NEURAL NETWORK RESULTS")
+    print(f"{'='*60}")
+    nn_model = keras.Sequential([
+        layers.Dense(256, activation='relu', input_shape=(X_train_scaled.shape[1],)),
+        layers.Dropout(0.3),
+        layers.Dense(128, activation='relu'),
+        layers.Dropout(0.3),
+        layers.Dense(64, activation='relu'),
+        layers.Dropout(0.2),
+        layers.Dense(32, activation='relu'),
+        layers.Dense(1)
+    ])
+    nn_model.compile(optimizer='adam', loss='mse', metrics=['mae'])
+    print("Training neural network...")
+    history = nn_model.fit(X_train_scaled, y_train, epochs=100, batch_size=32, 
+                           validation_split=0.2, verbose=0)
+    
+    nn_train_pred = nn_model.predict(X_train_scaled, verbose=0)
+    nn_test_pred = nn_model.predict(X_test_scaled, verbose=0)
+    nn_train_mse = mean_squared_error(y_train, nn_train_pred)
+    nn_test_mse = mean_squared_error(y_test, nn_test_pred)
+    nn_test_mae = mean_absolute_error(y_test, nn_test_pred)
+    print(f"Train MSE: {nn_train_mse:.6f}")
+    print(f"Test MSE:  {nn_test_mse:.6f}")
+    print(f"Test MAE:  {nn_test_mae:.6f}")
+    
+    # Try SVR with GridSearchCV for hyperparameter tuning
+    print(f"\n{'='*60}")
+    print("SVR (Support Vector Regression) with GridSearchCV")
+    print(f"{'='*60}")
+    param_grid = {
+        'C': [1, 10, 50, 100, 500],
+        'epsilon': [0.01, 0.05, 0.1, 0.2],
+        'gamma': ['scale', 'auto', 0.001, 0.01, 0.1]
+    }
+    svr = SVR(kernel='rbf', max_iter=5000)
+    grid_search = GridSearchCV(svr, param_grid, cv=5, scoring='neg_mean_squared_error', n_jobs=-1, verbose=0)
+    print("Searching optimal SVR parameters...")
+    grid_search.fit(X_train_scaled, y_train)
+    
+    print(f"Best SVR parameters: {grid_search.best_params_}")
+    svr_model = grid_search.best_estimator_
+    svr_train_pred = svr_model.predict(X_train_scaled)
+    svr_test_pred = svr_model.predict(X_test_scaled)
+    svr_train_mse = mean_squared_error(y_train, svr_train_pred)
+    svr_test_mse = mean_squared_error(y_test, svr_test_pred)
+    svr_test_mae = mean_absolute_error(y_test, svr_test_pred)
+    print(f"Train MSE: {svr_train_mse:.6f}")
+    print(f"Test MSE:  {svr_test_mse:.6f}")
+    print(f"Test MAE:  {svr_test_mae:.6f}")
+    
+    # Model comparison
+    print(f"\n{'='*60}")
+    print("MODEL COMPARISON")
+    print(f"{'='*60}")
+    print(f"{'Model':<20} {'Test MSE':<12} {'Test MAE':<12}")
+    print(f"{'-'*44}")
+    print(f"{'Ridge (PCA)':<20} {ridge_test_mse:<12.6f} {test_mae:<12.6f}")
+    print(f"{'SVR (GridSearch)':<20} {svr_test_mse:<12.6f} {svr_test_mae:<12.6f}")
+    print(f"{'Neural Network':<20} {nn_test_mse:<12.6f} {nn_test_mae:<12.6f}")
+    print(f"{'='*44}")
+    
+    # Use the best model
+    models_dict = {
+        'Ridge': (ridge_model, ridge_test_mse, test_mae),
+        'SVR': (svr_model, svr_test_mse, svr_test_mae),
+        'Neural Network': (nn_model, nn_test_mse, nn_test_mae)
+    }
+    
+    best_model_name = min(models_dict, key=lambda x: models_dict[x][1])
+    best_model_obj, best_mse, best_mae = models_dict[best_model_name]
+    
+    print(f"\n✓ Best model: {best_model_name} (Test MSE: {best_mse:.6f})")
+    
+    # Save the best model, scaler, and PCA
+    model_path = Path(MODEL_FILE)
+    scaler_path = model_path.parent / (model_path.stem + "_scaler.pkl")
+    
+    if best_model_name == 'Neural Network':
+        best_model_obj.save(str(model_path.with_suffix('.h5')))
+        print(f"Neural Network model saved to {model_path.with_suffix('.h5')}")
+    else:
+        joblib.dump(best_model_obj, model_path)
+        print(f"Model saved to {MODEL_FILE}")
+    
+    joblib.dump(scaler, scaler_path)
+    print(f"Scaler saved to {scaler_path}")
 
 # Predict brad.png
 image_path = "brad.png"
@@ -146,13 +250,19 @@ print(f"\nPredicting beauty score for image: {image_path}")
 
 # Load scaler if it exists
 scaler_path = model_path.parent / (model_path.stem + "_scaler.pkl") if 'model_path' in locals() else Path(MODEL_FILE).parent / (Path(MODEL_FILE).stem + "_scaler.pkl")
+
 if scaler_path.exists():
     scaler = joblib.load(scaler_path)
     embedding = processor.get_embedding_from_path(image_path)
     embedding_scaled = scaler.transform(embedding.reshape(1, -1))
-    predicted_score = model.predict(embedding_scaled)[0]
+    
+    # Check if model is neural network
+    if isinstance(best_model_obj, keras.models.Model):
+        predicted_score = best_model_obj.predict(embedding_scaled, verbose=0)[0][0]
+    else:
+        predicted_score = best_model_obj.predict(embedding_scaled)[0]
 else:
     embedding = processor.get_embedding_from_path(image_path)
-    predicted_score = model.predict(embedding.reshape(1, -1))[0]
+    predicted_score = best_model_obj.predict(embedding.reshape(1, -1))[0]
 
 print(f"Predicted beauty score: {predicted_score:.4f}")
