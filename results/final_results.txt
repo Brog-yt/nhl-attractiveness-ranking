@@ -143,3 +143,27 @@ KEY FINDINGS:
 • There is NO meaningful correlation between attractiveness and performance stats.
 • Player attractiveness appears to be independent of scoring ability.
 ================================================================================
+
+
+Results Summary:
+
+📸 Biz (biz.jpg)
+
+Score: 3.59 / 5.0
+Rank: #45 out of 807 players
+Top 5.6% - More attractive than 762 NHL players
+Quite attractive!
+📸 Whit (whit.jpg)
+
+Score: 3.37 / 5.0
+Rank: #156 out of 807 players
+Top 19.3% - More attractive than 651 NHL players
+Still above average
+For comparison, the top NHL players are:
+
+Vince Dunn - 3.98
+Marc Gatcomb - 3.98
+Kris Letang - 3.87
+Scott Wedgewood - 3.87
+Anthony Duclair - 3.86
+Biz is in elite company - ranking in the top 5.6% of all players analyzed! Whit is still above average at top 19.3%.
