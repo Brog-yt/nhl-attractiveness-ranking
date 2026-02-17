@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NHL Players Ranked By Attractiveness</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --card: #0f1b33;
+      --text: #e8eefc;
+      --muted: #a8b4d6;
+      --accent: #7aa2ff;
+      --border: rgba(255,255,255,0.10);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background: radial-gradient(1200px 800px at 20% 0%, rgba(122,162,255,0.25), transparent 55%), var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    main { padding: 28px 16px 60px; }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    .card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 18px;
+    }
+
+    h1 { margin: 0 0 12px; font-size: 40px; letter-spacing: -0.02em; }
+    h2 { margin: 22px 0 10px; font-size: 28px; }
+    h3 { margin: 18px 0 8px; font-size: 20px; color: var(--text); }
+    h4 { margin: 16px 0 6px; font-size: 16px; color: var(--muted); }
+
+    p { margin: 10px 0; }
+
+    blockquote {
+      margin: 12px 0;
+      padding: 12px 14px;
+      border-left: 4px solid var(--accent);
+      background: rgba(122,162,255,0.08);
+      border-radius: 10px;
+    }
+    blockquote p { margin: 0; }
+
+    ul, ol { margin: 10px 0 10px 22px; }
+    li { margin: 6px 0; }
+
+    /* Headshot enhancement (doesn't change text) */
+    li.has-headshot { display: flex; gap: 10px; align-items: center; }
+    li.has-headshot img { width: 34px; height: 34px; border-radius: 999px; border: 1px solid var(--border); background: rgba(255,255,255,0.06); flex: 0 0 auto; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="wrap">
+      <article class="card"><h1>NHL Players Ranked By Attractiveness</h1>
+<h3>Backstory</h3>
+<p>Last year I read <a href="https://dailyhive.com/vancouver/ai-canucks-nhl-most-attractive-team">an article</a> stating:</p>
+<blockquote>
+<p>Artificial intelligence has determined that the Canucks have the NHL's most attractive team, with an "average attractiveness score" of 7.841 out of 10.</p>
+</blockquote>
+<p>The article, however, had several SIGNIFICANT flaws to it:</p>
+<ol>
+<li>The Vancouver Canucks have never come first in anything, so I immediately knew something was wrong</li>
+<li>The article points to <a href="https://tonybet.com/en/">Tonybet</a> as the source, but the link goes only to a generic betting homepage, with no study details or scoring method. That lack of transparency really grinds my gears.</li>
+<li>The article claims it analyzed 1,079 NHL players, but that number doesn’t line up with a typical season snapshot (32 teams × 23 active roster spots ≈ 736). So who are these extra 343 ghosts that we analyzed... Sure I can understand a few called up from the minors, but THAT many??</li>
+</ol>
+<p>So I did what any reasonable person would do:</p>
+<p>I built my own study and documented the whole thing end-to-end.</p>
+<p>These are the questions I set out to answer:</p>
+<ol>
+<li>Who are the most and least attractive players in the NHL?</li>
+<li>Which NHL team is the most attractive on average?</li>
+<li>Does attractiveness correlate with winning (or losing)?</li>
+<li>Are defensemen more attractive than forwards—and are goalies really the ugliest?</li>
+<li>Are Canadian NHL players more attractive than American NHL players & how do they compare to the rest of the world?</li>
+</ol>
+<p>Bonus: How do the notorious Paul Bisonette and Ryan Whitney stack up in the rankings??</p>
+<h2>Building</h2>
+<p>Before we can rank NHL headshots, we need a model that can look at a face and spit out an “attractiveness score”. And before we can train a model… we need training data.</p>
+<h2>Get Data</h2>
+<p>So naturally I went hunting for a dataset where faces are already scored for attractiveness. Somehow, this exists?: <a href="https://www.kaggle.com/datasets/pranavchandane/scut-fbp5500-v2-facial-beauty-scores">SCUT-FBP5500</a>.</p>
+<p>SCUT-FBP5500 is a facial beauty dataset from South China University of Technology with <strong>5,500</strong> neutral, frontal face images.</p>
+<p>The basic idea is simple: each face is rated by a group of human judges, and the <strong>average</strong> of those ratings becomes the image’s “beauty score”. (It’s basically a very organized, peer-reviewed version of “rate me 1–5”.)</p>
+<h2>Build ML Model</h2>
+<p>Now that we have a dataset with “beauty scores”, the goal is to train a model that can take a brand-new face (not in the dataset) and predict an attractiveness score on the same <strong>1–5</strong> scale.</p>
+<p>Way back in university I built a baby CNN that could guess what number was written in a little pixel grid. I figured this was the same problem, but on steroids...</p>
+<p>So I optimistically dusted off my old assignment and applied it to facial analysis, boy was I wrong. The initial MSE (Mean Square Error) was around 2 (keep in mind the scale is from 1-5). So it was great at randomly guessing attractiveness.</p>
+<p>At that point I had two options:</p>
+<ol>
+<li>Keep brute-forcing a CNN from scratch and pretend I had infinite data and infinite patience</li>
+<li>Do what modern computer vision actually does: <strong>reuse a model that already understands faces</strong>, then train a much smaller model on top</li>
+</ol>
+<p>So that’s what I did.</p>
+<p>I switched to a transfer-learning style approach and leaned on pre-trained face models to do the heavy lifting. Instead of asking a CNN to learn “what a face is” from only a few thousand images, I first convert each face into a compact numerical representation (an embedding) using <strong>ArcFace</strong>.</p>
+<p>Think of it like this:</p>
+<ul>
+<li>A raw image is a giant mess of pixels</li>
+<li>An embedding is a clean 512-number “summary” of the important facial features</li>
+</ul>
+<p>Once I had those embeddings, predicting attractiveness became a standard regression problem and this is where things actually started working.</p>
+<p>Then I tested three different models:</p>
+<ol>
+<li>A <strong>Neural Network</strong> (4 dense layers + dropout)</li>
+<li><strong>Ridge Regression</strong> (linear, L2 regularization)</li>
+<li><strong>SVR (RBF kernel)</strong> with <strong>GridSearchCV</strong> tuning</li>
+</ol>
+<p>Here’s what I found on the held-out test set:</p>
+<ul>
+<li><strong>Neural Network:</strong> Test MSE <strong>0.1895</strong>, Test MAE <strong>0.3322</strong>, typical error <strong>±0.435</strong> (ouch)</li>
+<li><strong>Ridge Regression:</strong> Test MSE <strong>0.1080</strong>, Test MAE <strong>0.2534</strong>, typical error <strong>±0.329</strong></li>
+<li><strong>SVR (best):</strong> Test MSE <strong>0.0958</strong>, Test MAE <strong>0.2392</strong>, typical error <strong>±0.309</strong></li>
+</ul>
+<p>So the winner is <strong>SVR</strong>. It’s non-linear (unlike Ridge), it plays nicely with the weird geometry of embedding space, and it was the only model that consistently got me below my “please be under 0.1 MSE” goal.</p>
+<p>Now that we have a working model, we can run it on NHL player headshots and get our beauty scores</p>
+<h4>Geting Data</h4>
+<p>Getting NHL headshots took me a long time to navigate the murky waters of the internet. Out of a miracle I found https://github.com/Zmalski/NHL-API-Reference which has a beautiful API for NHL data, including player headshots and stats for active players. Thank you Zmalski, you’re my hero.</p>
+<h2>Results & Analysis</h2>
+<p>Now that we have our model and our data, we can run the predictions and analyze the results.</p>
+<h3>Goalies vs Defensemen v Forwards</h3>
+<p>First question: are goalies actually the ugliest, or is that just something we tell ourselves because they’re weird?</p>
+<p>Turns out… goalies win. By average attractiveness score:</p>
+<ol>
+<li><strong>Goalies</strong> — <strong>3.1272</strong> (72 players)</li>
+<li><strong>Defense</strong> — <strong>3.1135</strong> (243 players)</li>
+<li><strong>Forwards</strong> — <strong>3.1091</strong> (457 players)</li>
+</ol>
+<p>So yes, I’m officially reporting that <em>goalies are the most attractive position group</em>. I don’t make the rules, I just run the model.</p>
+<h3>Most Attractive Countries</h3>
+<p>Now for the passport check. Here are the top countries by average attractiveness (minimums are just “who exists in the NHL”, so don’t bully the small sample sizes):</p>
+<ol>
+<li><strong>Slovakia (SVK)</strong> — <strong>3.2267</strong> (8)</li>
+<li><strong>Denmark (DNK)</strong> — <strong>3.2197</strong> (4)</li>
+<li><strong>Czechia (CZE)</strong> — <strong>3.2102</strong> (19)</li>
+<li><strong>Norway (NOR)</strong> — <strong>3.1434</strong> (2)</li>
+<li><strong>Canada (CAN)</strong> — <strong>3.1331</strong> (314)</li>
+<li><strong>Sweden (SWE)</strong> — <strong>3.0990</strong> (76)</li>
+<li><strong>USA (USA)</strong> — <strong>3.0985</strong> (222)</li>
+</ol>
+<p>Canada is right near the top <em>and</em> has the biggest sample size by far, which is basically the statistical version of “yeah ok that checks out”.</p>
+<h3>Most Attractive Teams (Unweighted)</h3>
+<p>If you simply average every player on each roster equally, the top teams come out like this:</p>
+<ol>
+<li><strong>NSH</strong> — <strong>3.2387</strong> (Points %: 52.1%)</li>
+<li><strong>WPG</strong> — <strong>3.1910</strong> (45.8%)</li>
+<li><strong>NYI</strong> — <strong>3.1878</strong> (60.2%)</li>
+<li><strong>DAL</strong> — <strong>3.1782</strong> (64.3%)</li>
+<li><strong>COL</strong> — <strong>3.1760</strong> (80.9%)</li>
+</ol>
+<p>And… the Canucks?</p>
+<ul>
+<li><strong>VAN</strong> — <strong>3.0584</strong> (Points %: 37.8%) — ranked <strong>27th</strong></li>
+</ul>
+<p>So if the internet told you Vancouver was #1… I have some bad news.</p>
+<h3>Most Attractive Teams (Weighted by Ice Time)</h3>
+<p>One fair criticism of the “simple average” is that the 13th forward who plays 6 minutes a night counts the same as a top-pair defenseman playing 25.</p>
+<p>So I also calculated a <strong>weighted average</strong> where players who actually play a lot of hockey count more (weighted by ice time). The top teams by that weighted score:</p>
+<ol>
+<li><strong>NSH</strong> — <strong>3.2738</strong> (Points %: 52.1%)</li>
+<li><strong>SEA</strong> — <strong>3.2117</strong> (53.1%)</li>
+<li><strong>DAL</strong> — <strong>3.1594</strong> (64.3%)</li>
+<li><strong>WPG</strong> — <strong>3.1521</strong> (45.8%)</li>
+<li><strong>PIT</strong> — <strong>3.1463</strong> (59.4%)</li>
+</ol>
+<p>Vancouver moves slightly, but not enough to save the headline:</p>
+<ul>
+<li><strong>VAN</strong> — <strong>3.0526</strong> (Points %: 37.8%) — ranked <strong>26th</strong></li>
+</ul>
+<h3>Does Attractiveness Correlate With Performance?</h3>
+<p>This is where I expected at least <em>some</em> funny trend (like “handsome guys take fewer penalties” or “ugly guys score more out of spite”).</p>
+<p>Nope.</p>
+<p>With <strong>769 players</strong> who had stats available, I ran both Pearson (linear) and Spearman (rank) correlations between attractiveness and common performance metrics:</p>
+<ul>
+<li>Goals: Pearson <strong>-0.0663</strong> (p=0.066), Spearman <strong>-0.0419</strong> (p=0.246)</li>
+<li>Assists: Pearson <strong>-0.0497</strong> (p=0.169), Spearman <strong>-0.0495</strong> (p=0.170)</li>
+<li>Points: Pearson <strong>-0.0599</strong> (p=0.097), Spearman <strong>-0.0495</strong> (p=0.170)</li>
+<li>Penalty minutes: Pearson <strong>-0.0247</strong> (p=0.495), Spearman <strong>-0.0370</strong> (p=0.306)</li>
+</ul>
+<p>Translation: <strong>there’s no meaningful relationship</strong>. Being attractive doesn’t make you score more, win more, or take fewer trips to the penalty box.</p>
+<h3>Biz & Whit: The Important Scientific Questions</h3>
+<p>And finally, the real reason we’re all here.</p>
+<p><strong>Biz (biz.jpg)</strong></p>
+<ul>
+<li>Score: <strong>3.59 / 5.0</strong></li>
+<li>Rank: <strong>#45 / 807</strong> (Top <strong>5.6%</strong>)</li>
+</ul>
+<p><strong>Whit (whit.jpg)</strong></p>
+<ul>
+<li>Score: <strong>3.37 / 5.0</strong></li>
+<li>Rank: <strong>#156 / 807</strong> (Top <strong>19.3%</strong>)</li>
+</ul>
+<p>For comparison, some of the top of the leaderboard:</p>
+<ol>
+<li>Vince Dunn — <strong>4.05</strong></li>
+<li>Jason Dickinson — <strong>3.91</strong></li>
+<li>Kris Letang — <strong>3.88</strong></li>
+<li>Marc Gatcomb — <strong>3.86</strong></li>
+<li>Scott Wedgewood — <strong>3.85</strong></li>
+<li>Anthony Duclair — <strong>3.80</strong></li>
+<li>Seth Jones — <strong>3.78</strong></li>
+<li>Eetu Luostarinen — <strong>3.77</strong></li>
+<li>Ross Colton — <strong>3.77</strong></li>
+<li>Jeremy Swayman — <strong>3.76</strong></li>
+<li>Mackie Samoskevich — <strong>3.73</strong></li>
+<li>Brady Skjei — <strong>3.73</strong></li>
+<li>Dmitry Kulikov — <strong>3.73</strong></li>
+<li>Vitek Vanecek — <strong>3.73</strong></li>
+<li>Luke Evangelista — <strong>3.72</strong></li>
+<li>William Karlsson — <strong>3.71</strong></li>
+<li>Denver Barkey — <strong>3.71</strong></li>
+<li>Spencer Stastney — <strong>3.70</strong></li>
+<li>Tyler Seguin — <strong>3.70</strong></li>
+<li>John Gibson — <strong>3.68</strong></li>
+</ol>
+<p>Biz is in elite company. Whit is still comfortably above average. The model has spoken.</p></article>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      const headshots = {
+"Anthony Duclair": "https://assets.nhle.com/mugs/nhl/20252026/NYI/8477407.png",
+"Brady Skjei": "https://assets.nhle.com/mugs/nhl/20252026/NSH/8476869.png",
+"Denver Barkey": "https://assets.nhle.com/mugs/nhl/20252026/PHI/8484142.png",
+"Dmitry Kulikov": "https://assets.nhle.com/mugs/nhl/20252026/FLA/8475179.png",
+"Eetu Luostarinen": "https://assets.nhle.com/mugs/nhl/20252026/FLA/8480185.png",
+"Jason Dickinson": "https://assets.nhle.com/mugs/nhl/20252026/CHI/8477450.png",
+"Jeremy Swayman": "https://assets.nhle.com/mugs/nhl/20252026/BOS/8480280.png",
+"John Gibson": "https://assets.nhle.com/mugs/nhl/20252026/DET/8476434.png",
+"Kris Letang": "https://assets.nhle.com/mugs/nhl/20252026/PIT/8471724.png",
+"Luke Evangelista": "https://assets.nhle.com/mugs/nhl/20252026/NSH/8482146.png",
+"Mackie Samoskevich": "https://assets.nhle.com/mugs/nhl/20252026/FLA/8482713.png",
+"Marc Gatcomb": "https://assets.nhle.com/mugs/nhl/20252026/NYI/8483553.png",
+"Ross Colton": "https://assets.nhle.com/mugs/nhl/20252026/COL/8479525.png",
+"Scott Wedgewood": "https://assets.nhle.com/mugs/nhl/20252026/COL/8475809.png",
+"Seth Jones": "https://assets.nhle.com/mugs/nhl/20252026/FLA/8477495.png",
+"Spencer Stastney": "https://assets.nhle.com/mugs/nhl/20252026/EDM/8481056.png",
+"Tyler Seguin": "https://assets.nhle.com/mugs/nhl/20252026/DAL/8475794.png",
+"Vince Dunn": "https://assets.nhle.com/mugs/nhl/20252026/SEA/8478407.png",
+"Vitek Vanecek": "https://assets.nhle.com/mugs/nhl/20252026/UTA/8477970.png",
+"William Karlsson": "https://assets.nhle.com/mugs/nhl/20252026/VGK/8476448.png"
+      };
+
+      const lis = document.querySelectorAll('li');
+      for (const li of lis) {
+        // Match: "First Last — ..."
+        const text = (li.textContent || '').trim();
+        const m = text.match(/^(.+?)\s+—\s+/);
+        if (!m) continue;
+        const name = m[1].trim();
+        const url = headshots[name];
+        if (!url) continue;
+
+        // Don't duplicate if reloaded
+        if (li.querySelector('img')) continue;
+
+        const img = document.createElement('img');
+        img.loading = 'lazy';
+        img.src = url;
+        img.alt = '';
+        li.classList.add('has-headshot');
+        li.prepend(img);
+      }
+    })();
+  </script>
+</body>
+</html>
