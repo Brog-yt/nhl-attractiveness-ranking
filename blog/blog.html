@@ -6,61 +6,110 @@
   <title>NHL Players Ranked By Attractiveness</title>
   <style>
     :root {
-      --bg: #0b1220;
-      --card: #0f1b33;
-      --text: #e8eefc;
-      --muted: #a8b4d6;
-      --accent: #7aa2ff;
-      --border: rgba(255,255,255,0.10);
+      --bg: #fafafa;
+      --card: #ffffff;
+      --text: #191919;
+      --muted: #757575;
+      --accent: #1a8917;
+      --border: rgba(0, 0, 0, 0.08);
+      --divider: #e5e5e5;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      background: radial-gradient(1200px 800px at 20% 0%, rgba(122,162,255,0.25), transparent 55%), var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
       color: var(--text);
-      line-height: 1.6;
+      line-height: 1.7;
     }
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
 
-    main { padding: 28px 16px 60px; }
-    .wrap { max-width: 980px; margin: 0 auto; }
+    main { padding: 48px 16px 60px; }
+    .wrap { max-width: 760px; margin: 0 auto; }
     .card {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 18px 18px;
+      background: var(--card);
+      padding: 0;
     }
 
-    h1 { margin: 0 0 12px; font-size: 40px; letter-spacing: -0.02em; }
-    h2 { margin: 22px 0 10px; font-size: 28px; }
-    h3 { margin: 18px 0 8px; font-size: 20px; color: var(--text); }
-    h4 { margin: 16px 0 6px; font-size: 16px; color: var(--muted); }
+    h1 { 
+      margin: 0 0 24px; 
+      font-size: 42px; 
+      line-height: 1.2;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    h2 { 
+      margin: 48px 0 16px; 
+      font-size: 32px; 
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    h3 { 
+      margin: 32px 0 12px; 
+      font-size: 24px; 
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--text);
+    }
+    h4 { 
+      margin: 20px 0 8px; 
+      font-size: 16px; 
+      font-weight: 600;
+      color: var(--muted);
+    }
 
-    p { margin: 10px 0; }
+    p { 
+      margin: 0 0 16px; 
+      font-size: 18px;
+      line-height: 1.75;
+    }
 
     blockquote {
-      margin: 12px 0;
-      padding: 12px 14px;
-      border-left: 4px solid var(--accent);
-      background: rgba(122,162,255,0.08);
-      border-radius: 10px;
+      margin: 24px 0;
+      padding: 18px 24px;
+      border-left: 4px solid var(--text);
+      background: transparent;
+      border-radius: 0;
+      font-size: 18px;
+      font-style: italic;
+      color: var(--muted);
     }
-    blockquote p { margin: 0; }
+    blockquote p { 
+      margin: 0;
+      font-style: italic;
+    }
 
-    ul, ol { margin: 10px 0 10px 22px; }
-    li { margin: 6px 0; }
+    ul, ol { 
+      margin: 16px 0 16px 24px; 
+      padding-left: 0;
+    }
+    li { 
+      margin: 12px 0;
+      font-size: 18px;
+      line-height: 1.75;
+    }
 
     /* Headshot enhancement (doesn't change text) */
-    li.has-headshot { display: flex; gap: 10px; align-items: center; }
-    li.has-headshot img { width: 34px; height: 34px; border-radius: 999px; border: 1px solid var(--border); background: rgba(255,255,255,0.06); flex: 0 0 auto; }
+    li.has-headshot { display: flex; gap: 12px; align-items: center; }
+    li.has-headshot img { width: 40px; height: 40px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg); flex: 0 0 auto; }
+
+    /* Thumbnail styling */
+    img[alt="NHL Attractiveness Analysis"] {
+      margin: 0 0 32px;
+    }
+
+    /* Biz & Whit images */
+    img[alt*="headshot"] {
+      margin: 24px 0;
+    }
   </style>
 </head>
 <body>
   <main>
     <div class="wrap">
-      <article class="card"><h1>NHL Players Ranked By Attractiveness</h1>
+      <article class="card"><p style="text-align:center;margin-bottom:24px;"><img src="../thumbnail.png" alt="NHL Attractiveness Analysis" style="max-width:100%;height:auto;border-radius:12px;"></p>
+<h1>NHL Players Ranked By Attractiveness</h1>
 <h3>Backstory</h3>
 <p>Last year I read <a href="https://dailyhive.com/vancouver/ai-canucks-nhl-most-attractive-team">an article</a> stating:</p>
 <blockquote>
@@ -134,45 +183,103 @@
 </ol>
 <p>So yes, I’m officially reporting that <em>goalies are the most attractive position group</em>. I don’t make the rules, I just run the model.</p>
 <h3>Most Attractive Countries</h3>
-<p>Now for the passport check. Here are the top countries by average attractiveness (minimums are just “who exists in the NHL”, so don’t bully the small sample sizes):</p>
+<p>Now for the passport check. Here are the top countries by average attractiveness (minimums are just "who exists in the NHL", so don't bully the small sample sizes):</p>
 <ol>
-<li><strong>Slovakia (SVK)</strong> — <strong>3.2267</strong> (8)</li>
-<li><strong>Denmark (DNK)</strong> — <strong>3.2197</strong> (4)</li>
-<li><strong>Czechia (CZE)</strong> — <strong>3.2102</strong> (19)</li>
-<li><strong>Norway (NOR)</strong> — <strong>3.1434</strong> (2)</li>
-<li><strong>Canada (CAN)</strong> — <strong>3.1331</strong> (314)</li>
-<li><strong>Sweden (SWE)</strong> — <strong>3.0990</strong> (76)</li>
-<li><strong>USA (USA)</strong> — <strong>3.0985</strong> (222)</li>
+<li><strong>Slovakia (SVK)</strong> — <strong>3.2267</strong> (8 players)</li>
+<li><strong>Denmark (DNK)</strong> — <strong>3.2197</strong> (4 players)</li>
+<li><strong>Czechia (CZE)</strong> — <strong>3.2102</strong> (19 players)</li>
+<li><strong>Norway (NOR)</strong> — <strong>3.1434</strong> (2 players)</li>
+<li><strong>Canada (CAN)</strong> — <strong>3.1331</strong> (314 players)</li>
+<li><strong>Switzerland (CHE)</strong> — <strong>3.1327</strong> (12 players)</li>
+<li><strong>Sweden (SWE)</strong> — <strong>3.0990</strong> (76 players)</li>
+<li><strong>USA (USA)</strong> — <strong>3.0985</strong> (222 players)</li>
+<li><strong>Slovenia (SVN)</strong> — <strong>3.0985</strong> (1 player)</li>
+<li><strong>Russia (RUS)</strong> — <strong>3.0806</strong> (53 players)</li>
+<li><strong>Finland (FIN)</strong> — <strong>3.0805</strong> (36 players)</li>
+<li><strong>Australia (AUS)</strong> — <strong>3.0669</strong> (1 player)</li>
+<li><strong>Germany (DEU)</strong> — <strong>3.0137</strong> (6 players)</li>
+<li><strong>Austria (AUT)</strong> — <strong>2.9915</strong> (3 players)</li>
+<li><strong>Belarus (BLR)</strong> — <strong>2.9630</strong> (6 players)</li>
+<li><strong>Latvia (LVA)</strong> — <strong>2.9625</strong> (7 players)</li>
+<li><strong>Great Britain (GBR)</strong> — <strong>2.9452</strong> (1 player)</li>
+<li><strong>France (FRA)</strong> — <strong>2.9450</strong> (1 player)</li>
 </ol>
-<p>Canada is right near the top <em>and</em> has the biggest sample size by far, which is basically the statistical version of “yeah ok that checks out”.</p>
+<p>Canada is right near the top <em>and</em> has the biggest sample size by far, which is basically the statistical version of "yeah ok that checks out".</p>
 <h3>Most Attractive Teams (Unweighted)</h3>
-<p>If you simply average every player on each roster equally, the top teams come out like this:</p>
+<p>If you simply average every player on each roster equally, here are all 32 teams ranked:</p>
 <ol>
-<li><strong>NSH</strong> — <strong>3.2387</strong> (Points %: 52.1%)</li>
-<li><strong>WPG</strong> — <strong>3.1910</strong> (45.8%)</li>
-<li><strong>NYI</strong> — <strong>3.1878</strong> (60.2%)</li>
-<li><strong>DAL</strong> — <strong>3.1782</strong> (64.3%)</li>
-<li><strong>COL</strong> — <strong>3.1760</strong> (80.9%)</li>
+<li><strong>COL</strong> — <strong>3.2262</strong> (Points %: 80.9%)</li>
+<li><strong>LAK</strong> — <strong>3.2244</strong> (53.1%)</li>
+<li><strong>NSH</strong> — <strong>3.2105</strong> (52.1%)</li>
+<li><strong>WPG</strong> — <strong>3.2036</strong> (45.8%)</li>
+<li><strong>NYI</strong> — <strong>3.1978</strong> (60.2%)</li>
+<li><strong>DAL</strong> — <strong>3.1798</strong> (64.3%)</li>
+<li><strong>SJS</strong> — <strong>3.1778</strong> (55.2%)</li>
+<li><strong>FLA</strong> — <strong>3.1650</strong> (55.2%)</li>
+<li><strong>SEA</strong> — <strong>3.1575</strong> (53.1%)</li>
+<li><strong>PIT</strong> — <strong>3.1529</strong> (59.4%)</li>
+<li><strong>DET</strong> — <strong>3.1518</strong> (64.0%)</li>
+<li><strong>OTT</strong> — <strong>3.1467</strong> (53.1%)</li>
+<li><strong>MTL</strong> — <strong>3.1443</strong> (62.2%)</li>
+<li><strong>BUF</strong> — <strong>3.1339</strong> (59.4%)</li>
+<li><strong>ANA</strong> — <strong>3.1326</strong> (54.1%)</li>
+<li><strong>VGK</strong> — <strong>3.1318</strong> (62.5%)</li>
+<li><strong>CHI</strong> — <strong>3.1256</strong> (48.0%)</li>
+<li><strong>TOR</strong> — <strong>3.1196</strong> (57.1%)</li>
+<li><strong>WSH</strong> — <strong>3.1152</strong> (54.0%)</li>
+<li><strong>UTA</strong> — <strong>3.1136</strong> (55.1%)</li>
+<li><strong>BOS</strong> — <strong>3.1100</strong> (59.2%)</li>
+<li><strong>CGY</strong> — <strong>3.1086</strong> (48.0%)</li>
+<li><strong>PHI</strong> — <strong>3.1042</strong> (56.2%)</li>
+<li><strong>CBJ</strong> — <strong>3.0990</strong> (53.1%)</li>
+<li><strong>NJD</strong> — <strong>3.0905</strong> (53.1%)</li>
+<li><strong>VAN</strong> — <strong>3.0898</strong> (37.8%) — yikes</li>
+<li><strong>STL</strong> — <strong>3.0888</strong> (46.9%)</li>
+<li><strong>NYR</strong> — <strong>3.0832</strong> (48.0%)</li>
+<li><strong>MIN</strong> — <strong>3.0475</strong> (65.0%)</li>
+<li><strong>EDM</strong> — <strong>3.0297</strong> (58.0%)</li>
+<li><strong>CAR</strong> — <strong>3.0266</strong> (66.0%)</li>
+<li><strong>TBL</strong> — <strong>3.0208</strong> (68.1%)</li>
 </ol>
-<p>And… the Canucks?</p>
-<ul>
-<li><strong>VAN</strong> — <strong>3.0584</strong> (Points %: 37.8%) — ranked <strong>27th</strong></li>
-</ul>
 <p>So if the internet told you Vancouver was #1… I have some bad news.</p>
 <h3>Most Attractive Teams (Weighted by Ice Time)</h3>
-<p>One fair criticism of the “simple average” is that the 13th forward who plays 6 minutes a night counts the same as a top-pair defenseman playing 25.</p>
-<p>So I also calculated a <strong>weighted average</strong> where players who actually play a lot of hockey count more (weighted by ice time). The top teams by that weighted score:</p>
+<p>One fair criticism of the "simple average" is that the 13th forward who plays 6 minutes a night counts the same as a top-pair defenseman playing 25.</p>
+<p>So I also calculated a <strong>weighted average</strong> where players who are putting in the most minutes on the ice, count more (weighted by ice time). 
+    Here are all 32 teams ranked by weighted score:</p>
 <ol>
-<li><strong>NSH</strong> — <strong>3.2738</strong> (Points %: 52.1%)</li>
-<li><strong>SEA</strong> — <strong>3.2117</strong> (53.1%)</li>
-<li><strong>DAL</strong> — <strong>3.1594</strong> (64.3%)</li>
-<li><strong>WPG</strong> — <strong>3.1521</strong> (45.8%)</li>
-<li><strong>PIT</strong> — <strong>3.1463</strong> (59.4%)</li>
+<li><strong>NSH</strong> — <strong>3.2585</strong> (Points %: 52.1%)</li>
+<li><strong>SEA</strong> — <strong>3.2176</strong> (53.1%)</li>
+<li><strong>COL</strong> — <strong>3.1944</strong> (80.9%)</li>
+<li><strong>LAK</strong> — <strong>3.1880</strong> (53.1%)</li>
+<li><strong>PIT</strong> — <strong>3.1727</strong> (59.4%)</li>
+<li><strong>WPG</strong> — <strong>3.1721</strong> (45.8%)</li>
+<li><strong>DAL</strong> — <strong>3.1552</strong> (64.3%)</li>
+<li><strong>BUF</strong> — <strong>3.1484</strong> (59.4%)</li>
+<li><strong>OTT</strong> — <strong>3.1467</strong> (53.1%)</li>
+<li><strong>SJS</strong> — <strong>3.1454</strong> (55.2%)</li>
+<li><strong>NYI</strong> — <strong>3.1406</strong> (60.2%)</li>
+<li><strong>CHI</strong> — <strong>3.1366</strong> (48.0%)</li>
+<li><strong>MTL</strong> — <strong>3.1349</strong> (62.2%)</li>
+<li><strong>FLA</strong> — <strong>3.1343</strong> (55.2%)</li>
+<li><strong>TOR</strong> — <strong>3.1296</strong> (57.1%)</li>
+<li><strong>WSH</strong> — <strong>3.1187</strong> (54.0%)</li>
+<li><strong>CBJ</strong> — <strong>3.1123</strong> (53.1%)</li>
+<li><strong>BOS</strong> — <strong>3.1075</strong> (59.2%)</li>
+<li><strong>ANA</strong> — <strong>3.1046</strong> (54.1%)</li>
+<li><strong>DET</strong> — <strong>3.1011</strong> (64.0%)</li>
+<li><strong>VGK</strong> — <strong>3.0938</strong> (62.5%)</li>
+<li><strong>PHI</strong> — <strong>3.0930</strong> (56.2%)</li>
+<li><strong>CGY</strong> — <strong>3.0897</strong> (48.0%)</li>
+<li><strong>NYR</strong> — <strong>3.0849</strong> (48.0%)</li>
+<li><strong>VAN</strong> — <strong>3.0827</strong> (37.8%) — ranked <strong>25th</strong></li>
+<li><strong>UTA</strong> — <strong>3.0719</strong> (55.1%)</li>
+<li><strong>CAR</strong> — <strong>3.0478</strong> (66.0%)</li>
+<li><strong>NJD</strong> — <strong>3.0468</strong> (53.1%)</li>
+<li><strong>STL</strong> — <strong>3.0437</strong> (46.9%)</li>
+<li><strong>EDM</strong> — <strong>3.0423</strong> (58.0%)</li>
+<li><strong>MIN</strong> — <strong>3.0348</strong> (65.0%)</li>
+<li><strong>TBL</strong> — <strong>3.0211</strong> (68.1%)</li>
 </ol>
-<p>Vancouver moves slightly, but not enough to save the headline:</p>
-<ul>
-<li><strong>VAN</strong> — <strong>3.0526</strong> (Points %: 37.8%) — ranked <strong>26th</strong></li>
-</ul>
 <h3>Does Attractiveness Correlate With Performance?</h3>
 <p>This is where I expected at least <em>some</em> funny trend (like “handsome guys take fewer penalties” or “ugly guys score more out of spite”).</p>
 <p>Nope.</p>
@@ -185,13 +292,15 @@
 </ul>
 <p>Translation: <strong>there’s no meaningful relationship</strong>. Being attractive doesn’t make you score more, win more, or take fewer trips to the penalty box.</p>
 <h3>Biz & Whit: The Important Scientific Questions</h3>
-<p>And finally, the real reason we’re all here.</p>
-<p><strong>Biz (biz.jpg)</strong></p>
+<p>And finally, the real reason we're all here.</p>
+<p><strong>Biz</strong></p>
+<p style="text-align:center;"><img src="../biz.jpg" alt="Biz headshot" style="max-width:240px;border-radius:8px;border:1px solid var(--border);"></p>
 <ul>
 <li>Score: <strong>3.59 / 5.0</strong></li>
 <li>Rank: <strong>#45 / 807</strong> (Top <strong>5.6%</strong>)</li>
 </ul>
-<p><strong>Whit (whit.jpg)</strong></p>
+<p><strong>Whit</strong></p>
+<p style="text-align:center;"><img src="../whit.jpg" alt="Whit headshot" style="max-width:240px;border-radius:8px;border:1px solid var(--border);"></p>
 <ul>
 <li>Score: <strong>3.37 / 5.0</strong></li>
 <li>Rank: <strong>#156 / 807</strong> (Top <strong>19.3%</strong>)</li>
@@ -219,7 +328,9 @@
 <li>Tyler Seguin — <strong>3.70</strong></li>
 <li>John Gibson — <strong>3.68</strong></li>
 </ol>
-<p>Biz is in elite company. Whit is still comfortably above average. The model has spoken.</p></article>
+<p>Biz is in elite company. Whit is still comfortably above average. The model has spoken.</p>
+<hr style="margin: 40px 0; border: none; border-top: 1px solid var(--border);">
+<p style="font-size: 18px; line-height: 1.75;">For the <strong>FULL rankings</strong> of every player on every team, <a href="allPlayers.html">visit the complete player rankings</a>.</p></article>
     </div>
   </main>
 

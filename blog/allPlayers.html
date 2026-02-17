@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>All NHL Players - Attractiveness Rankings</title>
+  <style>
+    :root {
+      --bg: #fafafa;
+      --card: #ffffff;
+      --text: #191919;
+      --muted: #757575;
+      --accent: #1a8917;
+      --border: rgba(0, 0, 0, 0.08);
+      --divider: #e5e5e5;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    main { padding: 48px 16px 60px; }
+    .wrap { max-width: 900px; margin: 0 auto; }
+
+    h1 { 
+      margin: 0 0 12px; 
+      font-size: 42px; 
+      line-height: 1.2;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .subtitle {
+      font-size: 18px;
+      color: var(--muted);
+      margin-bottom: 32px;
+      line-height: 1.75;
+    }
+
+    .filter-section {
+      margin-bottom: 32px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .filter-section label {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .filter-section select {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--card);
+      color: var(--text);
+      font-size: 16px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .filter-section select:hover {
+      border-color: var(--accent);
+    }
+
+    .player-count {
+      font-size: 14px;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    .players-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 32px;
+    }
+
+    .player-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .rank-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+
+    .headshot {
+      width: 120px;
+      height: 120px;
+      border-radius: 12px;
+      margin: 0 auto 16px;
+      border: 1px solid var(--border);
+      object-fit: cover;
+      background: var(--bg);
+    }
+
+    .player-name {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 12px 0 8px;
+      color: var(--text);
+    }
+
+    .score {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 0;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 32px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: var(--border);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .back-link:hover {
+      text-decoration: none;
+      background: rgba(0, 0, 0, 0.12);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="wrap">
+      <a href="blog.html" class="back-link">← Back to Blog</a>
+      <h1>NHL Player Rankings</h1>
+      <p class="subtitle">Complete attractiveness rankings for all active NHL players.</p>
+      
+      <div class="filter-section">
+        <label for="teamFilter">Filter by Team:</label>
+        <select id="teamFilter">
+          <option value="">All Teams</option>
+        </select>
+        <span class="player-count" id="playerCount"></span>
+      </div>
+
+      <div class="players-grid" id="playersContainer"></div>
+    </div>
+  </main>
+
+  <script>
+    let allPlayers = [];
+
+    async function loadPlayers() {
+      try {
+        let response;
+        try {
+          response = await fetch('../players/attractive_players_with_stats.json');
+        } catch (e) {
+          response = await fetch('../../players/attractive_players_with_stats.json');
+        }
+        
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        allPlayers = await response.json();
+        
+        // Populate team filter dropdown
+        const teams = [...new Set(allPlayers.map(p => p.currentTeamAbbrev))].sort();
+        const teamSelect = document.getElementById('teamFilter');
+        teams.forEach(team => {
+          const option = document.createElement('option');
+          option.value = team;
+          option.textContent = team;
+          teamSelect.appendChild(option);
+        });
+
+        // Add event listener for team filter
+        teamSelect.addEventListener('change', filterAndRender);
+
+        // Initial render
+        renderPlayers(allPlayers);
+      } catch (error) {
+        console.error('Error loading players:', error);
+        document.getElementById('playersContainer').innerHTML = '<p style="padding: 20px;">Error loading player data. Make sure attractive_players_with_stats.json is in the players folder.</p>';
+      }
+    }
+
+    function filterAndRender() {
+      const selectedTeam = document.getElementById('teamFilter').value;
+      const filtered = selectedTeam 
+        ? allPlayers.filter(p => p.currentTeamAbbrev === selectedTeam)
+        : allPlayers;
+      renderPlayers(filtered);
+    }
+
+    function renderPlayers(players) {
+      const container = document.getElementById('playersContainer');
+      container.innerHTML = '';
+      
+      players.forEach(entry => {
+        const player = entry.player;
+        const score = entry.ridgeAttractivenessScore.toFixed(2);
+        
+        const card = document.createElement('div');
+        card.className = 'player-card';
+        card.innerHTML = `
+          <div class="rank-badge">#${entry.rank}</div>
+          <img src="${player.headshot}" alt="${player.firstName.default || player.firstName} ${player.lastName.default || player.lastName}" class="headshot" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22120%22%3E%3Crect fill=%22%23e5e5e5%22 width=%22120%22 height=%22120%22/%3E%3C/svg%3E'">
+          <div class="player-name">${player.firstName.default || player.firstName} ${player.lastName.default || player.lastName}</div>
+          <p class="score">${score} / 5.0</p>
+        `;
+        container.appendChild(card);
+      });
+
+      // Update player count
+      document.getElementById('playerCount').textContent = `${players.length} player${players.length !== 1 ? 's' : ''}`;
+    }
+    
+    loadPlayers();
+  </script>
+</body>
+</html>

@@ -83,4 +83,8 @@ embeddings_cache.pkl
 # Ignore any .h5 files
 *.h5
 
-
+# Un-ignore specific images for blog
+!biz.jpg
+!whit.jpg
+!thumbnail.png
+!players/attractiveness_analysis.json
