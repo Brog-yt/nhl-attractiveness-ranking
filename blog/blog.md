@@ -48,9 +48,13 @@ At that point I had two options:
 1. Keep brute-forcing a CNN from scratch and pretend I had infinite data and infinite patience
 2. Do what modern computer vision actually does: **reuse a model that already understands faces**, then train a much smaller model on top
 
-So that’s what I did.
+So that's what I did.
 
-I switched to a transfer-learning style approach and leaned on pre-trained face models to do the heavy lifting. Instead of asking a CNN to learn “what a face is” from only a few thousand images, I first convert each face into a compact numerical representation (an embedding) using **ArcFace**.
+I switched to a transfer-learning style approach and leaned on pre-trained face models to do the heavy lifting. Instead of asking a CNN to learn "what a face is" from only a few thousand images, I first convert each face into a compact numerical representation (an embedding) using **ArcFace**.
+
+### Ensemble & Boosting Methods
+
+While building this project, I also experimented with **ensemble learning** approaches using **XGBoost** and **LightGBM**—two gradient boosting frameworks that combine multiple weak decision trees into a powerful predictor. These algorithms work sequentially: each tree is trained to correct the errors of the previous ones, creating an ensemble that's much stronger than any single tree. Both support regularization (L1 and L2) to prevent overfitting, making them popular in machine learning competitions. XGBoost builds trees level-by-level while LightGBM builds leaf-by-leaf, typically making it faster and more memory-efficient. However, after testing, the simpler **SVR model** outperformed these more complex approaches on this particular task—a good reminder that simpler isn't always worse.
 
 Think of it like this:
 - A raw image is a giant mess of pixels

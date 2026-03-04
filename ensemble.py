@@ -44,6 +44,44 @@ if xgb_model_path.exists() and lgb_model_path.exists():
     print(f"Loading LightGBM model from {LIGHTGBM_MODEL_FILE}...")
     lgb_model = joblib.load(lgb_model_path)
     print("LightGBM model loaded successfully!")
+    
+    # Load embeddings and scores for evaluation
+    print(f"\nLoading embeddings from cache: {CACHE_FILE}")
+    with open(CACHE_FILE, "rb") as f:
+        data = pickle.load(f)
+        embeddings = data["embeddings"]
+        scores = data["scores"]
+    
+    X = np.array(embeddings)
+    y = np.array(scores)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    # Evaluate both models
+    xgb_train_pred = xgb_model.predict(X_train)
+    xgb_test_pred = xgb_model.predict(X_test)
+    xgb_train_mse = mean_squared_error(y_train, xgb_train_pred)
+    xgb_test_mse = mean_squared_error(y_test, xgb_test_pred)
+    xgb_train_mae = mean_absolute_error(y_train, xgb_train_pred)
+    xgb_test_mae = mean_absolute_error(y_test, xgb_test_pred)
+    
+    lgb_train_pred = lgb_model.predict(X_train)
+    lgb_test_pred = lgb_model.predict(X_test)
+    lgb_train_mse = mean_squared_error(y_train, lgb_train_pred)
+    lgb_test_mse = mean_squared_error(y_test, lgb_test_pred)
+    lgb_train_mae = mean_absolute_error(y_train, lgb_train_pred)
+    lgb_test_mae = mean_absolute_error(y_test, lgb_test_pred)
+    
+    # ============================================
+    # Model Comparison
+    # ============================================
+    print("\n" + "="*80)
+    print("MODEL COMPARISON")
+    print("="*80)
+    print(f"{'Model':<15} {'Train MSE':<12} {'Test MSE':<12} {'Train MAE':<12} {'Test MAE':<12}")
+    print("-"*80)
+    print(f"{'XGBoost':<15} {xgb_train_mse:<12.6f} {xgb_test_mse:<12.6f} {xgb_train_mae:<12.6f} {xgb_test_mae:<12.6f}")
+    print(f"{'LightGBM':<15} {lgb_train_mse:<12.6f} {lgb_test_mse:<12.6f} {lgb_train_mae:<12.6f} {lgb_test_mae:<12.6f}")
+    print("="*80)
 else:
     print(f"\nModels not found. Training new ensemble models...")
     
@@ -120,11 +158,13 @@ else:
     
     xgb_train_mse = mean_squared_error(y_train, xgb_train_pred)
     xgb_test_mse = mean_squared_error(y_test, xgb_test_pred)
+    xgb_train_mae = mean_absolute_error(y_train, xgb_train_pred)
     xgb_test_mae = mean_absolute_error(y_test, xgb_test_pred)
     
     print(f"\nXGBoost Results:")
     print(f"  Train MSE: {xgb_train_mse:.6f}")
     print(f"  Test MSE:  {xgb_test_mse:.6f}")
+    print(f"  Train MAE: {xgb_train_mae:.6f}")
     print(f"  Test MAE:  {xgb_test_mae:.6f}")
     
     # Save XGBoost model
@@ -161,11 +201,13 @@ else:
     
     lgb_train_mse = mean_squared_error(y_train, lgb_train_pred)
     lgb_test_mse = mean_squared_error(y_test, lgb_test_pred)
+    lgb_train_mae = mean_absolute_error(y_train, lgb_train_pred)
     lgb_test_mae = mean_absolute_error(y_test, lgb_test_pred)
     
     print(f"\nLightGBM Results:")
     print(f"  Train MSE: {lgb_train_mse:.6f}")
     print(f"  Test MSE:  {lgb_test_mse:.6f}")
+    print(f"  Train MAE: {lgb_train_mae:.6f}")
     print(f"  Test MAE:  {lgb_test_mae:.6f}")
     
     # Save LightGBM model
@@ -176,14 +218,14 @@ else:
     # ============================================
     # Model Comparison
     # ============================================
-    print("\n" + "="*60)
+    print("\n" + "="*80)
     print("MODEL COMPARISON")
-    print("="*60)
-    print(f"{'Model':<15} {'Train MSE':<12} {'Test MSE':<12} {'Test MAE':<12}")
-    print("-"*60)
-    print(f"{'XGBoost':<15} {xgb_train_mse:<12.6f} {xgb_test_mse:<12.6f} {xgb_test_mae:<12.6f}")
-    print(f"{'LightGBM':<15} {lgb_train_mse:<12.6f} {lgb_test_mse:<12.6f} {lgb_test_mae:<12.6f}")
-    print("="*60)
+    print("="*80)
+    print(f"{'Model':<15} {'Train MSE':<12} {'Test MSE':<12} {'Train MAE':<12} {'Test MAE':<12}")
+    print("-"*80)
+    print(f"{'XGBoost':<15} {xgb_train_mse:<12.6f} {xgb_test_mse:<12.6f} {xgb_train_mae:<12.6f} {xgb_test_mae:<12.6f}")
+    print(f"{'LightGBM':<15} {lgb_train_mse:<12.6f} {lgb_test_mse:<12.6f} {lgb_train_mae:<12.6f} {lgb_test_mae:<12.6f}")
+    print("="*80)
 
 
 # ============================================

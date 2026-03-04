@@ -147,8 +147,10 @@
 <li>Keep brute-forcing a CNN from scratch and pretend I had infinite data and infinite patience</li>
 <li>Do what modern computer vision actually does: <strong>reuse a model that already understands faces</strong>, then train a much smaller model on top</li>
 </ol>
-<p>So that’s what I did.</p>
-<p>I switched to a transfer-learning style approach and leaned on pre-trained face models to do the heavy lifting. Instead of asking a CNN to learn “what a face is” from only a few thousand images, I first convert each face into a compact numerical representation (an embedding) using <strong>ArcFace</strong>.</p>
+<p>So that's what I did.</p>
+<p>I switched to a transfer-learning style approach and leaned on pre-trained face models to do the heavy lifting. Instead of asking a CNN to learn "what a face is" from only a few thousand images, I first convert each face into a compact numerical representation (an embedding) using <strong>ArcFace</strong>.</p>
+<h3>Ensemble & Boosting Methods</h3>
+<p>While building this project, I also experimented with <strong>ensemble learning</strong> approaches using <strong>XGBoost</strong> and <strong>LightGBM</strong>—two gradient boosting frameworks that combine multiple weak decision trees into a powerful predictor. These algorithms work sequentially: each tree is trained to correct the errors of the previous ones, creating an ensemble that's much stronger than any single tree. Both support regularization (L1 and L2) to prevent overfitting, making them popular in machine learning competitions. XGBoost builds trees level-by-level while LightGBM builds leaf-by-leaf, typically making it faster and more memory-efficient. However, after testing, the simpler <strong>SVR model</strong> outperformed these more complex approaches on this particular task—a good reminder that simpler isn't always worse.</p>
 <p>Think of it like this:</p>
 <ul>
 <li>A raw image is a giant mess of pixels</li>
